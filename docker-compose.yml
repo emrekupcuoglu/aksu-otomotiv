@@ -1,0 +1,22 @@
+services:
+  pocketbase:
+    build:
+      context: ./pocketbase
+    # This healthcheck ensures Next.js doesn't try to connect before PB is ready
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://0.0.0.0:8080/api/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - pb_data:/pb/pb_data
+
+  web:
+    build:
+      context: ./website
+    depends_on:
+      pocketbase:
+        condition: service_healthy
+
+volumes:
+  pb_data:
